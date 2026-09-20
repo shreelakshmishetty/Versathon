@@ -51,7 +51,7 @@ class ReportProcessor:
 
         # Call AI service for deep understanding
         if file_type == 'image':
-            ai_data = self.ai_service.analyze_report_image(file_path, extracted_text)
+            ai_data = self.ai_service.analyze_report_image(file_path, extracted_text, heuristic_tests)
         else:
             ai_data = self.ai_service.analyze_report_text(extracted_text, heuristic_tests)
 
@@ -80,11 +80,19 @@ class ReportProcessor:
                     "important_note": "Review this test value with your doctor."
                 })
 
+        report_summary = (ai_data.get("report_summary") or "").strip()
+        if not report_summary:
+            report_summary = (
+                f"This medical report contains {len(tests)} extracted test parameter(s). "
+                "Each result is shown with its reported value and reference range where available. "
+                "Please discuss these results with a qualified healthcare professional."
+            )
+
         return {
             "extracted_text": extracted_text,
             "report_date": final_date,
             "laboratory_name": final_lab,
-            "report_summary": ai_data.get("report_summary", ""),
+            "report_summary": report_summary,
             "general_notes": ai_data.get("general_notes", []),
             "tests": tests
         }

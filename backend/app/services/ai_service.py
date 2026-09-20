@@ -110,12 +110,17 @@ JSON SCHEMA EXAMPLE:
             logger.error(f"OpenAI API call failed: {e}. Falling back to heuristic analysis.")
             return self._heuristic_fallback_analysis(extracted_text, pre_extracted_tests or [])
 
-    def analyze_report_image(self, image_path: str, ocr_text: str = "") -> Dict[str, Any]:
+    def analyze_report_image(
+        self,
+        image_path: str,
+        ocr_text: str = "",
+        pre_extracted_tests: Optional[List[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
         """
         Uses OpenAI Vision API to extract and explain medical report directly from an image.
         """
         if not self.api_key:
-            return self._heuristic_fallback_analysis(ocr_text, [])
+            return self._heuristic_fallback_analysis(ocr_text, pre_extracted_tests or [])
 
         try:
             mime_type = mimetypes.guess_type(image_path)[0] or "image/jpeg"
@@ -172,7 +177,7 @@ Extract all test results, lab name, report date, and provide simple educational 
             return self._normalize_ai_response(parsed, ocr_text)
         except Exception as e:
             logger.error(f"OpenAI Vision call failed: {e}. Falling back to OCR analysis.")
-            return self._heuristic_fallback_analysis(ocr_text, [])
+            return self._heuristic_fallback_analysis(ocr_text, pre_extracted_tests or [])
 
     def _normalize_ai_response(self, ai_data: Dict[str, Any], raw_text: str) -> Dict[str, Any]:
         """Validates and standardizes AI response, ensuring mathematically sound statuses."""
